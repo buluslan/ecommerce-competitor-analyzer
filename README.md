@@ -317,6 +317,10 @@ node scripts/scrape-amazon.js B0C4YT8S6H
 
 - **问题反馈**：[GitHub Issues](https://github.com/buluslan/ecommerce-competitor-analyzer/issues)
 - **讨论交流**：[GitHub Discussions](https://github.com/buluslan/ecommerce-competitor-analyzer/discussions)
+- **联系Builder，请备注【github】**：
+
+<img width="717" height="714" alt="wechat_2025-10-17_173400_583" src="https://github.com/user-attachments/assets/7c406098-dcd9-4684-84bd-f0ed4213e95f" />
+
 
 ## 路线图
 
@@ -333,8 +337,8 @@ node scripts/scrape-amazon.js B0C4YT8S6H
 
 <div align="center">
 
-**专为电商从业者打造 ❤️**
+**专为跨境电商从业者打造 ❤️**
 
-[⬆ 返回顶部](#电商竞品分析器)
+[⬆ 返回顶部](#跨境电商竞品分析Skill)
 
 </div>
