@@ -18,7 +18,7 @@
 
 ## 概述
 
-这是一个 [Claude Code Skill](https://claude.ai/code)，可以自动分析多个电商平台（Amazon、Temu、Shopee）的竞品数据，并生成全面的 AI 分析报告。
+这是一个 [Claude Code Skill](https://claude.ai/code)，可以自动分析多个电商平台（Amazon、Temu、Shopee等）的竞品数据，并生成全面的 AI 分析报告。
 
 ### 核心功能
 
@@ -43,8 +43,13 @@
 
 Claude 就会：
 1. 从 Amazon 提取产品数据
-2. 生成 AI 驱动的分析报告
-3. 将结果输出到 Google Sheets 和 Markdown 文件
+2. 生成 AI 驱动的分析报告，主要包括：
+- 基础信息：商品标题、价格、评分情况等。
+- 内容分析：listing文案的方法论总结，高频卖点和内容亮点，TOP10高频关键词分析。
+- 视觉分析：主图和A+的设计方法论总结，视觉动线拆解。
+- 评论分析：统计评论数量和星级分布，并详细分析最新的100条评论内容，分别总结3条产品优势和缺陷，输出改进建议。
+- 其他分析：包括asin排名和市场动态，Q&A中的高频问题分析，以及整体的分析总结。
+4. 将结果输出到 Google Sheets 和 Markdown 文件
 
 ## 系统要求
 
@@ -311,7 +316,7 @@ node scripts/scrape-amazon.js B0C4YT8S6H
 - 基于 n8n 工作流 v81 逻辑构建
 - 使用 Olostep API 进行网页抓取
 - 使用 Google Gemini API 进行 AI 分析
-- 灵感来自 [宝玉的 Skills 框架](https://github.com/op7418)
+- 宝玉的 Skills 框架
 
 ## 支持
 
