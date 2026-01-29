@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { validateProductData } = require('./data-validator.js');
 
 // Load environment variables
 function loadEnv() {
@@ -26,7 +27,7 @@ function loadEnv() {
   }
 }
 
-// Test scraping function (matching n8n workflow configuration)
+// Test scraping function (using v2 API with better accuracy)
 async function testScrape(asin) {
   console.log(`\n🔍 Testing scrape for ASIN: ${asin}`);
 
@@ -34,8 +35,9 @@ async function testScrape(asin) {
   const url = `https://www.amazon.com/dp/${asin}`;
 
   try {
-    // Use v1 API endpoint (matching n8n workflow)
-    const response = await fetch('https://api.olostep.com/v1/scrapes', {
+    // Use v2 API endpoint with dynamic content extraction
+    // CRITICAL: v2 API has much better accuracy than v1
+    const response = await fetch('https://api.olostep.com/v2/agent/web-agent', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OLOSTEP_API_KEY}`,
@@ -43,17 +45,10 @@ async function testScrape(asin) {
       },
       body: JSON.stringify({
         url: url,
-        extract: {
-          title: true,
-          bullet_points: true,
-          price: true,
-          rating: true,
-          reviews: {
-            max: 100,
-            sort: "recent"
-          },
-          images: true
-        }
+        wait_time: 10,  // Wait for page to fully load
+        screenshot: false,
+        extract_dynamic_content: true,
+        comments_number: 100  // Extract 100 reviews
       })
     });
 
@@ -64,33 +59,127 @@ async function testScrape(asin) {
 
     const data = await response.json();
 
-    // Convert to markdown format
+    // Convert to markdown format (v2 API returns different structure)
     let markdownContent = `# Product Analysis for ${asin}\n\n`;
-    if (data.data) {
-      if (data.data.title) markdownContent += `## Title\n${data.data.title}\n\n`;
-      if (data.data.price) markdownContent += `## Price\n${JSON.stringify(data.data.price)}\n\n`;
-      if (data.data.rating) markdownContent += `## Rating\n${JSON.stringify(data.data.rating)}\n\n`;
-      if (data.data.bullet_points) markdownContent += `## Bullet Points\n${JSON.stringify(data.data.bullet_points)}\n\n`;
-      if (data.data.reviews) {
-        markdownContent += `## Reviews (${data.data.reviews.length || 0})\n`;
-        if (Array.isArray(data.data.reviews)) {
-          data.data.reviews.slice(0, 20).forEach((review, i) => {
-            markdownContent += `\n### Review ${i + 1}\n`;
-            markdownContent += `- Rating: ${review.rating || 'N/A'}\n`;
-            markdownContent += `- Title: ${review.title || 'No title'}\n`;
-            markdownContent += `- Body: ${review.body || 'No content'}\n`;
-          });
-        }
-      }
+
+    // v2 API returns markdown_content directly
+    if (data.markdown_content) {
+      markdownContent = data.markdown_content;
+    } else if (data.html_content) {
+      // Fallback: convert HTML to basic markdown
+      markdownContent += `## HTML Content\n\n${data.html_content.substring(0, 5000)}...\n\n`;
+    } else {
+      throw new Error('No content returned from API');
+    }
+
+    // Extract basic data for validation
+    const extractedData = {
+      title: extractTitle(markdownContent),
+      price: extractPrice(markdownContent),
+      rating: extractRating(markdownContent)
+    };
+
+    // Validate scraped data
+    const validation = validateProductData(asin, extractedData);
+
+    if (!validation.isValid) {
+      console.error(`\n⚠️ Validation Failed for ASIN ${asin}:`);
+      validation.issues.forEach(issue => console.error(`   ❌ ${issue}`));
+      validation.warnings.forEach(warning => console.warn(`   ⚠️  ${warning}`));
+      console.error(`   ${validation.summary}`);
+
+      // Still return data but mark as potentially invalid
+      return {
+        success: true,
+        data,
+        markdownContent,
+        validation: {
+          passed: false,
+          ...validation
+        },
+        extractedData
+      };
+    }
+
+    if (validation.warnings.length > 0) {
+      console.warn(`\n⚠️ Validation Warnings for ASIN ${asin}:`);
+      validation.warnings.forEach(warning => console.warn(`   ⚠️  ${warning}`));
     }
 
     console.log(`✅ Scrape successful: ${markdownContent.length} characters of content`);
-    return { success: true, data, markdownContent };
+    console.log(`✅ Validation passed`);
+    return {
+      success: true,
+      data,
+      markdownContent,
+      validation: {
+        passed: true,
+        ...validation
+      },
+      extractedData
+    };
 
   } catch (error) {
     console.error(`❌ Scrape failed: ${error.message}`);
     return { success: false, error: error.message };
   }
+}
+
+// Helper functions to extract data from markdown content
+function extractTitle(markdown) {
+  // Try to find title in various markdown formats
+  const patterns = [
+    /^#\s+(.+)$/m,           // # Title
+    /##\s+Title\s*\n\s*(.+)$/m,  // ## Title\n content
+    /##\s+产品标题\s*\n\s*(.+)$/m,
+  ];
+
+  for (const pattern of patterns) {
+    const match = markdown.match(pattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+
+  // Fallback: return first non-empty line
+  const lines = markdown.split('\n').filter(l => l.trim());
+  return lines[0] || 'Unknown Title';
+}
+
+function extractPrice(markdown) {
+  // Try to extract price from markdown
+  const patterns = [
+    /\$\s*(\d+\.?\d*)/,  // $19.99
+    /价格[：\s]*[^\d]*([\d,]+\.?\d*)/i,  // 价格：$19.99
+    /Price[：\s]*[^\d]*([\d,]+\.?\d*)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = markdown.match(pattern);
+    if (match && match[1]) {
+      return match[1].replace(/,/g, '');
+    }
+  }
+
+  return null;
+}
+
+function extractRating(markdown) {
+  // Try to extract rating from markdown
+  const patterns = [
+    /(\d\.?\d*)\s*[☆★]/,  // 4.5 ⭐
+    /评分[：\s]*[^\d]*(\d\.?\d*)/i,  // 评分：4.5
+    /Rating[：\s]*[^\d]*(\d\.?\d*)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = markdown.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
 }
 
 // Test AI analysis function

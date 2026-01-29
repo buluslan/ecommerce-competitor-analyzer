@@ -1,6 +1,54 @@
-# 🚀 E-commerce Competitor Analyzer v1.0.0
+# 🚀 E-commerce Competitor Analyzer v1.0.1
 
 **发布日期**: 2026-01-29
+**作者**: Buluslan@新西楼Newest AI
+**类型**: 🚨 CRITICAL BUG FIX
+
+---
+
+## ⚠️ 重要更新 - 必读
+
+### 关键Bug修复
+**问题**: Olostep API v1 准确率严重不足（测试显示0%准确率）
+- 3个测试ASIN全部返回错误产品
+- 返回的是推荐位/广告位产品，而非目标ASIN
+
+**修复内容**:
+- ✅ 升级到 Olostep API v2 端点
+- ✅ 添加完整的数据验证模块 (`data-validator.js`)
+- ✅ 实现实时验证检查
+- ✅ 添加数据提取辅助函数
+- ✅ 更新文档说明已知问题
+
+**影响**:
+- 所有使用 v1.0.0 的用户应立即升级
+- 之前生成的分析结果需要人工验证
+
+---
+
+## 📋 详细变更
+
+### 修复的文件
+1. `scripts/test-skill.js` - 升级API端点，添加验证逻辑
+2. `scripts/data-validator.js` - 新增验证模块
+3. `KNOWN_ISSUES.md` - 新增已知问题文档
+4. `RELEASE_NOTES.md` - 本更新日志
+
+### 新增功能
+- 数据验证模块：检查标题长度、ASIN一致性、价格合理性
+- 验证警告系统：在数据可能不准确时发出警告
+- 辅助提取函数：从markdown中提取标题、价格、评分
+
+### 测试结果
+修复后进行了重新测试，数据准确性显著提升。
+
+---
+
+---
+
+# 🚀 E-commerce Competitor Analyzer v1.0.0
+
+**发布日期**: 2026-01-28
 **作者**: Buluslan@新西楼Newest AI
 
 ---
