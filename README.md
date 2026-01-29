@@ -3,6 +3,8 @@
 <div align="center">
 
 **一款强大的多平台电商竞品分析 Claude Code Skill**
+Created By Buluslan
+想了解更多最新AI行业动态，AI+电商/广告的行业实践方法，人与AI如何协作共生的思考，请关注公众号：新西楼
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-blue)](https://claude.ai/code)
