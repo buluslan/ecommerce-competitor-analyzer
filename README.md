@@ -60,10 +60,10 @@ Claude 就会：
 
 ```bash
 # 使用 npx skills（推荐）
-npx skills add YOUR_USERNAME/ecommerce-competitor-analyzer
+npx skills add buluslan/ecommerce-competitor-analyzer
 
 # 或手动克隆
-git clone https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer.git
+git clone https://github.com/buluslan/ecommerce-competitor-analyzer.git
 cp -r ecommerce-competitor-analyzer ~/.claude/skills/main-mode-skills/ecommerce-competitor-analyzer.skill
 ```
 
@@ -308,8 +308,8 @@ node scripts/scrape-amazon.js B0C4YT8S6H
 
 ## 支持
 
-- **问题反馈**：[GitHub Issues](https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer/issues)
-- **讨论交流**：[GitHub Discussions](https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer/discussions)
+- **问题反馈**：[GitHub Issues](https://github.com/buluslan/ecommerce-competitor-analyzer/issues)
+- **讨论交流**：[GitHub Discussions](https://github.com/buluslan/ecommerce-competitor-analyzer/discussions)
 
 ## 路线图
 
