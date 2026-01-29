@@ -1,8 +1,8 @@
-# 电商竞品分析器
+# 跨境电商竞品分析Skill
 
 <div align="center">
 
-**一款强大的多平台电商竞品分析 Claude Code 技能**
+**一款强大的多平台电商竞品分析 Claude Code Skill**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-blue)](https://claude.ai/code)
@@ -11,7 +11,7 @@
 
 ## 概述
 
-这是一个 [Claude Code 技能](https://claude.ai/code)，可以自动分析多个电商平台（Amazon、Temu、Shopee）的竞品数据，并生成全面的 AI 分析报告。
+这是一个 [Claude Code Skill](https://claude.ai/code)，可以自动分析多个电商平台（Amazon、Temu、Shopee）的竞品数据，并生成全面的 AI 分析报告。
 
 ### 核心功能
 
@@ -27,7 +27,7 @@
   - Markdown 报告（详细分析）
 - **错误隔离**：单个产品失败不会中断批量处理
 
-## 什么是 Claude Code 技能？
+## 什么是 Claude Code Skill？
 
 **技能**是 Claude Code AI 的"使用手册"。它通过提供结构化的提示词、脚本和配置，让 Claude 能够执行专业任务。
 
