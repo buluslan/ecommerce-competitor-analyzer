@@ -1,333 +1,333 @@
-# E-commerce Competitor Analyzer
+# 电商竞品分析器
 
 <div align="center">
 
-**A powerful multi-platform e-commerce competitor analysis skill for Claude Code**
+**一款强大的多平台电商竞品分析 Claude Code 技能**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-blue)](https://claude.ai/code)
 
 </div>
 
-## Overview
+## 概述
 
-This is a [Claude Code Skill](https://claude.ai/code) that automatically analyzes competitor products across multiple e-commerce platforms (Amazon, Temu, Shopee) and generates comprehensive AI-powered analysis reports.
+这是一个 [Claude Code 技能](https://claude.ai/code)，可以自动分析多个电商平台（Amazon、Temu、Shopee）的竞品数据，并生成全面的 AI 分析报告。
 
-### Key Features
+### 核心功能
 
-- **Multi-Platform Support**: Amazon (active), Temu & Shopee (planned)
-- **Batch Processing**: Analyze multiple products in a single request
-- **AI-Powered Analysis**: Four-dimensional analysis framework:
-  - Copywriting strategy & keyword analysis
-  - Visual asset design methodology
-  - Customer review sentiment analysis
-  - Market positioning & competitive intelligence
-- **Dual Format Output**:
-  - Google Sheets (structured data)
-  - Markdown reports (detailed analysis)
-- **Error Isolation**: Single product failure doesn't stop batch processing
+- **多平台支持**：Amazon（已启用）、Temu 和 Shopee（计划中）
+- **批量处理**：单次请求分析多个产品
+- **AI 驱动分析**：四维度分析框架：
+  - 文案策略与关键词分析
+  - 视觉资产设计方法论
+  - 客户评论情感分析
+  - 市场定位与竞争情报
+- **双格式输出**：
+  - Google Sheets（结构化数据）
+  - Markdown 报告（详细分析）
+- **错误隔离**：单个产品失败不会中断批量处理
 
-## What is a Claude Code Skill?
+## 什么是 Claude Code 技能？
 
-A **Skill** is an "instruction manual" for Claude Code AI. It enables Claude to perform specialized tasks by providing structured prompts, scripts, and configurations.
+**技能**是 Claude Code AI 的"使用手册"。它通过提供结构化的提示词、脚本和配置，让 Claude 能够执行专业任务。
 
-This skill allows you to simply say:
-> "Analyze these Amazon products: B0C4YT8S6H, B08N5WRQ1Y, B0CLFH7CCV"
+使用本技能，你只需要说：
+> "分析这些 Amazon 产品：B0C4YT8S6H, B08N5WRQ1Y, B0CLFH7CCV"
 
-And Claude will:
-1. Extract product data from Amazon
-2. Generate AI-powered analysis reports
-3. Output results to Google Sheets + Markdown files
+Claude 就会：
+1. 从 Amazon 提取产品数据
+2. 生成 AI 驱动的分析报告
+3. 将结果输出到 Google Sheets 和 Markdown 文件
 
-## Requirements
+## 系统要求
 
-### API Keys (Required)
+### 必需的 API 密钥
 
-| Service | Purpose | Cost |
+| 服务 | 用途 | 费用 |
 |---------|---------|------|
-| **Olostep API** | Web scraping | 1000 free requests/month, then $0.002/request |
-| **Google Gemini API** | AI analysis | ~$0.001/product |
+| **Olostep API** | 网页数据抓取 | 1000 次免费请求/月，之后 $0.002/次 |
+| **Google Gemini API** | AI 分析 | ~$0.001/产品 |
 
-### API Keys (Optional)
+### 可选的 API 密钥
 
-| Service | Purpose |
+| 服务 | 用途 |
 |---------|---------|
-| **Google Sheets API** | Export results to Google Sheets |
+| **Google Sheets API** | 将结果导出到 Google Sheets |
 
-## Installation
+## 安装
 
-### Step 1: Install the Skill
+### 步骤 1：安装技能
 
 ```bash
-# Using npx skills (recommended)
+# 使用 npx skills（推荐）
 npx skills add YOUR_USERNAME/ecommerce-competitor-analyzer
 
-# Or clone manually
+# 或手动克隆
 git clone https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer.git
 cp -r ecommerce-competitor-analyzer ~/.claude/skills/main-mode-skills/ecommerce-competitor-analyzer.skill
 ```
 
-### Step 2: Configure Environment Variables
+### 步骤 2：配置环境变量
 
 ```bash
-# Copy the example env file
+# 复制示例环境文件
 cd ~/.claude/skills/main-mode-skills/ecommerce-competitor-analyzer.skill
 cp .env.example .env
 
-# Edit .env and add your API keys
+# 编辑 .env 并添加你的 API 密钥
 nano .env
 ```
 
-Add your API keys:
+添加你的 API 密钥：
 ```bash
 OLOSTEP_API_KEY=your_olostep_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 GOOGLE_SHEETS_ID=your_google_sheets_id_here
 ```
 
-### Step 3: Verify Installation
+### 步骤 3：验证安装
 
 ```bash
-# List installed skills
+# 列出已安装的技能
 ~/.claude/list-skills.sh
 ```
 
-## Usage
+## 使用方法
 
-### Basic Usage (Single Product)
+### 基础用法（单个产品）
 
-In Claude Code, simply say:
-
-```
-Analyze this Amazon product: B0C4YT8S6H
-```
-
-Claude will:
-1. Extract product data from Amazon
-2. Generate comprehensive analysis report
-3. Save to Google Sheets (1 row) + Markdown file
-
-### Batch Analysis (Multiple Products)
+在 Claude Code 中，只需说：
 
 ```
-Analyze these Amazon products:
+分析这个 Amazon 产品：B0C4YT8S6H
+```
+
+Claude 会：
+1. 从 Amazon 提取产品数据
+2. 生成全面的分析报告
+3. 保存到 Google Sheets（1行）+ Markdown 文件
+
+### 批量分析（多个产品）
+
+```
+分析这些 Amazon 产品：
 B0C4YT8S6H
 B08N5WRQ1Y
 B0CLFH7CCV
 ```
 
-Or use URLs:
+或使用 URL：
 
 ```
-Analyze these products:
+分析这些产品：
 https://amazon.com/dp/B0C4YT8S6H
 https://amazon.com/dp/B08N5WRQ1Y
 ```
 
-### Output Formats
+### 输出格式
 
-#### Format 1: Google Sheets (Structured Data)
+#### 格式 1：Google Sheets（结构化数据）
 
-| ASIN | Product Title | Price | Rating | Copywriting Analysis | Visual Analysis | Review Analysis | Market Analysis |
+| ASIN | 产品标题 | 价格 | 评分 | 文案分析 | 视觉分析 | 评论分析 | 市场分析 |
 |------|--------------|-------|--------|---------------------|-----------------|-----------------|-----------------|
-| B0C4YT8S6H | Samsung Galaxy Tab A9+ | $159.99 | 4.4 | [300-word summary] | [300-word summary] | [300-word summary] | [300-word summary] |
+| B0C4YT8S6H | Samsung Galaxy Tab A9+ | $159.99 | 4.4 | [300字摘要] | [300字摘要] | [300字摘要] | [300字摘要] |
 
-#### Format 2: Markdown Report (Detailed Analysis)
+#### 格式 2：Markdown 报告（详细分析）
 
 ```markdown
-# Amazon Competitor Analysis Report
+# Amazon 竞品分析报告
 
-## Product 1: B0C4YT8S6H
+## 产品 1：B0C4YT8S6H
 
-### Basic Information
-- Title: Samsung Galaxy Tab A9+ Plus 11" 64GB Android Tablet
-- Price: $159.99
-- Rating: 4.4/5
+### 基本信息
+- 标题：Samsung Galaxy Tab A9+ Plus 11" 64GB Android Tablet
+- 价格：$159.99
+- 评分：4.4/5
 
-### Copywriting Strategy & Keyword Analysis
-[Full analysis content...]
+### 文案策略与关键词分析
+[完整分析内容...]
 
-### Visual Asset Design Methodology
-[Full analysis content...]
+### 视觉资产设计方法论
+[完整分析内容...]
 
-### Customer Review Analysis
-[Full analysis content...]
+### 客户评论分析
+[完整分析内容...]
 
-### Market Positioning & Competitive Intelligence
-[Full analysis content...]
+### 市场定位与竞争情报
+[完整分析内容...]
 ```
 
-## Configuration
+## 配置
 
-### Google Sheets Setup (Optional)
+### Google Sheets 设置（可选）
 
-If you want to export results to Google Sheets:
+如果要将结果导出到 Google Sheets：
 
-1. **Create Google Cloud Project**
-   - Visit [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project
+1. **创建 Google Cloud 项目**
+   - 访问 [Google Cloud Console](https://console.cloud.google.com/)
+   - 创建新项目
 
-2. **Enable Google Sheets API**
-   - Navigate to "APIs & Services" > "Library"
-   - Search for "Google Sheets API"
-   - Click "Enable"
+2. **启用 Google Sheets API**
+   - 导航到"API 和服务" > "库"
+   - 搜索"Google Sheets API"
+   - 点击"启用"
 
-3. **Create OAuth2 Credentials**
-   - Navigate to "APIs & Services" > "Credentials"
-   - Click "Create Credentials" > "OAuth client ID"
-   - Application type: "Desktop app"
-   - Download the JSON credentials file
+3. **创建 OAuth2 凭证**
+   - 导航到"API 和服务" > "凭据"
+   - 点击"创建凭据" > "OAuth 客户端 ID"
+   - 应用类型："桌面应用"
+   - 下载 JSON 凭证文件
 
-4. **Configure Skill**
-   - Copy the contents of the JSON file
-   - Paste into `.env` as `GOOGLE_SHEETS_CREDENTIALS`
-   - Add your Google Sheets ID as `GOOGLE_SHEETS_ID`
+4. **配置技能**
+   - 复制 JSON 文件内容
+   - 粘贴到 `.env` 中的 `GOOGLE_SHEETS_CREDENTIALS`
+   - 添加你的 Google Sheets ID 作为 `GOOGLE_SHEETS_ID`
 
-### Advanced Settings
+### 高级设置
 
-Edit `platforms.yaml` for advanced configuration:
+编辑 `platforms.yaml` 进行高级配置：
 
 ```yaml
 settings:
-  max_batch_size: 20        # Max products per batch
-  concurrency_limit: 5      # Parallel processing
-  scraping_timeout: 120000  # 2 minutes
-  analysis_timeout: 60000   # 1 minute
+  max_batch_size: 20        # 每批最大产品数
+  concurrency_limit: 5      # 并发处理数
+  scraping_timeout: 120000  # 2分钟
+  analysis_timeout: 60000   # 1分钟
 ```
 
-## Project Structure
+## 项目结构
 
 ```
 ecommerce-competitor-analyzer.skill/
-├── SKILL.md                                # AI instruction manual
-├── platforms.yaml                          # Platform configurations
-├── .env.example                            # Configuration template
-├── scripts/                                # Core scripts
-│   ├── detect-platform.js                 # Platform detection
-│   ├── scrape-amazon.js                   # Amazon scraper
-│   └── batch-processor.js                 # Batch processing engine
-├── prompts/                                # AI prompt templates
-│   ├── analysis-prompt-base.md            # Base analysis framework
-│   ├── analysis-prompt-amazon.md          # Amazon-specific prompts
-│   └── analysis-prompt-cross-platform.md  # Cross-platform comparison
-└── references/                             # Documentation
-    ├── n8n-workflow-analysis.md           # n8n workflow insights
-    └── platform-differences.md            # Platform comparison
+├── SKILL.md                                # AI 指令手册
+├── platforms.yaml                          # 平台配置
+├── .env.example                            # 配置模板
+├── scripts/                                # 核心脚本
+│   ├── detect-platform.js                 # 平台检测
+│   ├── scrape-amazon.js                   # Amazon 爬虫
+│   └── batch-processor.js                 # 批处理引擎
+├── prompts/                                # AI 提示词模板
+│   ├── analysis-prompt-base.md            # 基础分析框架
+│   ├── analysis-prompt-amazon.md          # Amazon 专用提示词
+│   └── analysis-prompt-cross-platform.md  # 跨平台对比
+└── references/                             # 文档
+    ├── n8n-workflow-analysis.md           # n8n 工作流参考
+    └── platform-differences.md            # 平台对比
 ```
 
-## API Key Setup Guide
+## API 密钥获取指南
 
 ### 1. Olostep API
 
-1. Visit [https://olostep.com/](https://olostep.com/)
-2. Sign up for a free account
-3. Navigate to Dashboard > API Keys
-4. Copy your API key
-5. Add to `.env`: `OLOSTEP_API_KEY=your_key_here`
+1. 访问 [https://olostep.com/](https://olostep.com/)
+2. 注册免费账户
+3. 导航到 Dashboard > API Keys
+4. 复制你的 API 密钥
+5. 添加到 `.env`：`OLOSTEP_API_KEY=your_key_here`
 
-**Pricing**: 1000 free requests/month, then $0.002/request
+**费用**：1000 次免费请求/月，之后 $0.002/次
 
 ### 2. Google Gemini API
 
-1. Visit [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
-2. Click "Create API Key"
-3. Copy the key
-4. Add to `.env`: `GEMINI_API_KEY=your_key_here`
+1. 访问 [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+2. 点击"创建 API 密钥"
+3. 复制密钥
+4. 添加到 `.env`：`GEMINI_API_KEY=your_key_here`
 
-**Pricing**: ~$0.001/product analysis
+**费用**：~$0.001/产品分析
 
-### 3. Google Sheets API (Optional)
+### 3. Google Sheets API（可选）
 
-See "Google Sheets Setup" section above.
+参见上面的"Google Sheets 设置"部分。
 
-## Troubleshooting
+## 故障排除
 
-### Issue: "Olostep API key not found"
+### 问题："Olostep API key not found"
 
-**Solution**: Make sure you've created `.env` file from `.env.example` and added your API key.
+**解决方案**：确保你已从 `.env.example` 创建了 `.env` 文件并添加了你的 API 密钥。
 
-### Issue: "Google Sheets authentication failed"
+### 问题："Google Sheets authentication failed"
 
-**Solution**: Ensure `GOOGLE_SHEETS_CREDENTIALS` in `.env` contains valid JSON (single line).
+**解决方案**：确保 `.env` 中的 `GOOGLE_SHEETS_CREDENTIALS` 包含有效的 JSON（单行）。
 
-### Issue: "Batch processing timeout"
+### 问题："Batch processing timeout"
 
-**Solution**: Increase `SCRAPER_TIMEOUT` in `.env` or reduce batch size.
+**解决方案**：增加 `.env` 中的 `SCRAPER_TIMEOUT` 或减少批量大小。
 
-### Issue: "Some products failed but others succeeded"
+### 问题："部分产品失败但其他成功"
 
-**Solution**: This is expected behavior. The skill uses error isolation - single failures don't stop the batch. Check the output report for failed items.
+**解决方案**：这是预期行为。技能使用错误隔离机制 - 单个失败不会中断整批处理。检查输出报告中的失败项。
 
-## Development
+## 开发
 
-### Running Tests
+### 运行测试
 
 ```bash
-# Test platform detection
+# 测试平台检测
 node scripts/detect-platform.js https://amazon.com/dp/B0C4YT8S6H
 
-# Test scraper
+# 测试爬虫
 node scripts/scrape-amazon.js B0C4YT8S6H
 ```
 
-### Adding New Platforms
+### 添加新平台
 
-1. Add platform config to `platforms.yaml`
-2. Create scraper script in `scripts/`
-3. Create analysis prompt in `prompts/`
-4. Update `scripts/detect-platform.js`
+1. 在 `platforms.yaml` 中添加平台配置
+2. 在 `scripts/` 中创建爬虫脚本
+3. 在 `prompts/` 中创建分析提示词
+4. 更新 `scripts/detect-platform.js`
 
-## Contributing
+## 贡献
 
-Contributions are welcome! Please:
+欢迎贡献！请：
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+1. Fork 仓库
+2. 创建功能分支
+3. 进行更改
+4. 提交 Pull Request
 
-### Areas for Contribution
+### 贡献方向
 
-- [ ] Add Temu platform support
-- [ ] Add Shopee platform support
-- [ ] Improve error handling
-- [ ] Add more AI analysis dimensions
-- [ ] Create Excel export format
-- [ ] Add PDF report generation
+- [ ] 添加 Temu 平台支持
+- [ ] 添加 Shopee 平台支持
+- [ ] 改进错误处理
+- [ ] 添加更多 AI 分析维度
+- [ ] 创建 Excel 导出格式
+- [ ] 添加 PDF 报告生成
 
-## License
+## 许可证
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本项目基于 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
-## Acknowledgments
+## 致谢
 
-- Built based on n8n workflow v81 logic
-- Uses Olostep API for web scraping
-- Uses Google Gemini API for AI analysis
-- Inspired by [宝玉's Skills framework](https://github.com/op7418)
+- 基于 n8n 工作流 v81 逻辑构建
+- 使用 Olostep API 进行网页抓取
+- 使用 Google Gemini API 进行 AI 分析
+- 灵感来自 [宝玉的 Skills 框架](https://github.com/op7418)
 
-## Support
+## 支持
 
-- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer/discussions)
+- **问题反馈**：[GitHub Issues](https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer/issues)
+- **讨论交流**：[GitHub Discussions](https://github.com/YOUR_USERNAME/ecommerce-competitor-analyzer/discussions)
 
-## Roadmap
+## 路线图
 
-- [x] Amazon platform support
-- [ ] Temu platform support
-- [ ] Shopee platform support
-- [ ] Cross-platform comparison
-- [ ] Historical price tracking
-- [ ] Review sentiment visualization
-- [ ] Competitor price alerts
-- [ ] Automated daily analysis
+- [x] Amazon 平台支持
+- [ ] Temu 平台支持
+- [ ] Shopee 平台支持
+- [ ] 跨平台对比
+- [ ] 历史价格追踪
+- [ ] 评论情感可视化
+- [ ] 竞品价格提醒
+- [ ] 自动每日分析
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for e-commerce professionals**
+**专为电商从业者打造 ❤️**
 
-[⬆ Back to Top](#ecommerce-competitor-analyzer)
+[⬆ 返回顶部](#电商竞品分析器)
 
 </div>

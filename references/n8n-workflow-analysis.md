@@ -1,124 +1,124 @@
-# n8n Workflow Reference
+# n8n 工作流参考
 
-**Source**: Amazon Competitor Analysis n8n Workflow (v81)
-**Workflow ID**: N2Z4oEsWYFAFWDX3
-**Location**: Your n8n workflow URL (private)
-**Config File**: `工作流配置.json`
-
----
-
-## Overview
-
-This document captures the key patterns, decisions, and learnings from the n8n workflow implementation that are relevant to the skill implementation.
+**来源**：Amazon 竞品分析 n8n 工作流 (v81)
+**工作流 ID**：N2Z4oEsWYFAFWDX3
+**位置**：你的 n8n 工作流 URL（私有）
+**配置文件**：`工作流配置.json`
 
 ---
 
-## Workflow Architecture
+## 概述
 
-### Node Flow (v81)
+本文档记录了从 n8n 工作流实现中的关键模式、决策和经验，这些内容与 skill 实现相关。
+
+---
+
+## 工作流架构
+
+### 节点流程 (v81)
 
 ```
-Google Sheets Trigger
+Google Sheets 触发器
     ↓
-Google Sheets (Read ASINs)
+Google Sheets (读取 ASINs)
     ↓
-Filter (Skip analyzed)
+过滤器 (跳过已分析的)
     ↓
-Olostep API (Scrape with 100 comments)
+Olostep API (抓取100条评论)
     ↓
-Set (Parse data)
+Set (解析数据)
     ↓
-Google Gemini (AI Analysis)
+Google Gemini (AI 分析)
     ↓
-Code (Extract structured data) ← **Key fix in v81**
+Code (提取结构化数据) ← **v81 关键修复**
     ↓
-Google Sheets (Write results)
+Google Sheets (写入结果)
 ```
 
-### Key Nodes
+### 关键节点
 
-| Node | Purpose | Critical Setting |
+| 节点 | 用途 | 关键设置 |
 |------|---------|------------------|
-| **Filter** | Skip already-analyzed ASINs | Check "分析结果" column is empty |
-| **Olostep API** | Scrape product page | `comments_number: 100` |
-| **Google Gemini** | AI analysis | Model: `gemini-3-flash-preview` |
-| **Code - Extract** | Parse AI response | Uses `$input.all()` for batch |
+| **Filter** | 跳过已分析的 ASIN | 检查"分析结果"列是否为空 |
+| **Olostep API** | 抓取产品页面 | `comments_number: 100` |
+| **Google Gemini** | AI 分析 | 模型：`gemini-3-flash-preview` |
+| **Code - Extract** | 解析 AI 响应 | 使用 `$input.all()` 进行批处理 |
 
 ---
 
-## Critical Fixes & Learnings
+## 关键修复与经验
 
-### Problem 1: Batch Processing Not Working (v79 → v81)
+### 问题 1：批处理不工作 (v79 → v81)
 
-**Symptom**: Workflow only processed one ASIN despite reading multiple from Google Sheets.
+**症状**：工作流只处理了一个 ASIN，尽管从 Google Sheets 读取了多个。
 
-**Root Cause**: The "Code - 提取结构化数据" node was using `$input.item.json` instead of `$input.all()`, causing it to collapse all items into one.
+**根本原因**："Code - 提取结构化数据"节点使用了 `$input.item.json` 而不是 `$input.all()`，导致所有项目合并成一个。
 
-**Evidence** (Execution #368):
+**证据**（执行 #368）：
 ```
-Google Sheets: 3 items ✅
-Filter: 3 items ✅
-Olostep API: 3 items ✅
-Google Gemini: 3 items ✅
-Code - Extract: 1 item ❌ (collapsed!)
+Google Sheets: 3 个项目 ✅
+Filter: 3 个项目 ✅
+Olostep API: 3 个项目 ✅
+Google Gemini: 3 个项目 ✅
+Code - Extract: 1 个项目 ❌ (被合并！)
 ```
 
-**Solution** (v81):
+**解决方案** (v81)：
 ```javascript
-// BEFORE (Wrong)
+// 之前（错误）
 const item = $input.item.json;
-// Only processes first item
+// 只处理第一个项目
 
-// AFTER (Correct)
+// 之后（正确）
 const items = $input.all();
 const results = items.map((item, index) => {
-  // Process each item independently
-  return { json: { /* extracted data */ } };
+  // 独立处理每个项目
+  return { json: { /* 提取的数据 */ } };
 });
-return results;  // Return all results
+return results;  // 返回所有结果
 ```
 
-**Key Pattern**: Always use `$input.all()` + `.map()` for batch processing in n8n Code nodes.
+**关键模式**：在 n8n Code 节点中进行批处理时，始终使用 `$input.all()` + `.map()`。
 
 ---
 
-### Problem 2: Expression Format Errors (v71 → v72)
+### 问题 2：表达式格式错误 (v71 → v72)
 
-**Symptom**: Workflow validation failed with "Invalid expression" errors.
+**症状**：工作流验证失败，提示"Invalid expression"错误。
 
-**Root Cause**: n8n expressions must use `{{ }}` wrapping, not direct JavaScript.
+**根本原因**：n8n 表达式必须使用 `{{ }}` 包裹，不能直接使用 JavaScript。
 
-**Solution**:
+**解决方案**：
 ```javascript
-// BEFORE (Wrong)
+// 之前（错误）
 {{ $('Set - 解析数据').item.json.markdownContent }}
 
-// AFTER (Correct)
+// 之后（正确）
 {{ $('Set - 解析数据').item.json.markdownContent }}
 ```
 
-**Key Pattern**: All n8n expressions in HTTP nodes must use double curly braces.
+**关键模式**：HTTP 节点中的所有 n8n 表达式必须使用双花括号。
 
 ---
 
-## Code Patterns for Skill Implementation
+## Skill 实现的代码模式
 
-### 1. Batch Processing Pattern
+### 1. 批处理模式
 
 ```javascript
-// From n8n "Code - 提取结构化数据" node (v81)
+// 来自 n8n "Code - 提取结构化数据"节点 (v81)
 const items = $input.all();
 
 const results = items.map((item, index) => {
   try {
-    // Extract data from current item
+    // 从当前项目提取数据
     const aiResponse = item.json.content?.parts?.[0]?.text || '';
 
-    // Get upstream data for this index
+    // 获取该索引的上游数据
     const upstreamData = $('Set - 解析数据').all();
     const asin = upstreamData[index].json.asin;
 
-    // Return structured result
+    // 返回结构化结果
     return {
       json: {
         asin: asin,
@@ -128,7 +128,7 @@ const results = items.map((item, index) => {
       }
     };
   } catch (error) {
-    // Error isolation: single failure doesn't stop batch
+    // 错误隔离：单个失败不会停止批处理
     return {
       json: {
         asin: 'unknown',
@@ -141,16 +141,16 @@ const results = items.map((item, index) => {
 return results;
 ```
 
-### 2. Regex Extraction Patterns
+### 2. 正则提取模式
 
 ```javascript
-// Title extraction (multiple fallback patterns)
+// 标题提取（多种备用模式）
 const titlePatterns = [
   /产品标题[：:]+([^\n]+)/,
   /Title[：:]+([^\n]+)/
 ];
 
-let title = '未知';  // Default value
+let title = '未知';  // 默认值
 for (const pattern of titlePatterns) {
   const match = aiResponse.match(pattern);
   if (match) {
@@ -159,44 +159,44 @@ for (const pattern of titlePatterns) {
   }
 }
 
-// Price extraction
+// 价格提取
 const pricePatterns = [
   /价格[：:]+[^0-9]*([0-9]+\.?[0-9]*)/,
   /Price[：:]+[^0-9]*([0-9]+\.?[0-9]*)/
 ];
 
-// Rating extraction
+// 评分提取
 const ratingPatterns = [
   /评分[：:]+[^0-9]*([0-9]+\.?[0-9]*)/,
   /Rating[：:]+[^0-9]*([0-9]+\.?[0-9]*)/
 ];
 ```
 
-### 3. Error Isolation Pattern
+### 3. 错误隔离模式
 
 ```javascript
-// Process with error isolation
+// 带错误隔离的处理
 const items = $input.all();
 const results = items.map((item, index) => {
   try {
-    // Processing logic
+    // 处理逻辑
     const data = processData(item);
     return { success: true, data };
   } catch (error) {
-    // Return error result instead of throwing
+    // 返回错误结果而不是抛出异常
     return { success: false, error: error.message };
   }
 });
 
-// Continue with all results (successful + failed)
+// 继续处理所有结果（成功 + 失败）
 return results;
 ```
 
 ---
 
-## Olostep API Configuration
+## Olostep API 配置
 
-### Request Format
+### 请求格式
 
 ```javascript
 {
@@ -204,108 +204,108 @@ return results;
   "wait_time": 10,
   "screenshot": false,
   "extract_dynamic_content": true,
-  "comments_number": 100  // Key: 100 comments for deep analysis
+  "comments_number": 100  // 关键：100条评论用于深度分析
 }
 ```
 
-### Response Format
+### 响应格式
 
 ```javascript
 {
   "task_id": "string",
-  "markdown_content": "Full page content in markdown",
-  "html_content": "Full page HTML"
+  "markdown_content": "完整的页面内容（markdown格式）",
+  "html_content": "完整的页面 HTML"
 }
 ```
 
-### Key Settings
+### 关键设置
 
-| Parameter | Value | Notes |
+| 参数 | 值 | 说明 |
 |-----------|-------|-------|
-| `comments_number` | 100 | Set to 100 for deep review analysis |
-| `wait_time` | 10 | Allow page load completion |
-| `extract_dynamic_content` | true | Catch JS-rendered content |
+| `comments_number` | 100 | 设置为 100 以进行深度评论分析 |
+| `wait_time` | 10 | 允许页面完全加载 |
+| `extract_dynamic_content` | true | 捕获 JS 渲染的内容 |
 
 ---
 
-## Gemini AI Configuration
+## Gemini AI 配置
 
-### Model
+### 模型
 
-- **Model**: `gemini-3-flash-preview`
-- **Reason**: Fast and cost-effective for analysis tasks
+- **模型**：`gemini-3-flash-preview`
+- **原因**：快速且性价比高的分析任务
 
-### Prompt Structure
+### 提示词结构
 
-The prompt is structured with:
-1. **Role**: Expert Amazon operations director + brand strategist
-2. **Goal**: Deep product analysis with 4 dimensions
-3. **Output**: Structured analysis + extracted fields
+提示词结构包含：
+1. **角色**：专家级 Amazon 运营总监 + 品牌策略师
+2. **目标**：4 维度的深度产品分析
+3. **输出**：结构化分析 + 提取的字段
 
-### 4-Dimensional Analysis Framework
+### 4 维度分析框架
 
 1. **文案构建逻辑与词频分析** (The Brain)
-   - Build strategy (pain point / scenario / spec-driven)
-   - Top 10 keyword extraction
+   - 构建策略（痛点/场景/规格驱动）
+   - Top 10 关键词提取
 
 2. **视觉资产设计思路** (The Face)
-   - Design methodology
-   - Visual flow breakdown
-   - Color psychology
+   - 设计方法论
+   - 视觉流程分解
+   - 色彩心理学
 
 3. **评论定量与定性分析** (The Voice)
-   - Quantitative overview
-   - Advantage clustering
-   - Negative review penetration
-   - Top 3 insights
+   - 定量概述
+   - 优势聚类
+   - 负面评论深入分析
+   - Top 3 洞察
 
 4. **市场维态与盲区扫描** (The Pulse)
-   - Price trends
-   - Q&A analysis
-   - Blind spot identification
+   - 价格趋势
+   - Q&A 分析
+   - 盲区识别
 
 ---
 
-## Google Sheets Integration
+## Google Sheets 集成
 
-### Sheet Structure
+### 表格结构
 
-| Column | Purpose |
+| 列 | 用途 |
 |--------|---------|
-| A (ASIN) | Product identifier (input) |
-| B (分析结果) | Full AI analysis (output) |
-| C (标题) | Extracted title (output) |
-| D (价格) | Extracted price (output) |
-| E (评分) | Extracted rating (output) |
+| A (ASIN) | 产品标识符（输入） |
+| B (分析结果) | 完整的 AI 分析（输出） |
+| C (标题) | 提取的标题（输出） |
+| D (价格) | 提取的价格（输出） |
+| E (评分) | 提取的评分（输出） |
 
-### Filter Logic
+### 过滤逻辑
 
 ```javascript
-// Skip if already analyzed
+// 如果已分析则跳过
 const isAnalyzed = $input.item.json.分析结果 !== '';
 return isAnalyzed === false;
 ```
 
 ---
 
-## Version History
+## 版本历史
 
-| Version | Date | Key Changes |
+| 版本 | 日期 | 关键变更 |
 |---------|------|-------------|
-| v81 | 2026-01-28 | Fixed batch processing (Code node) |
-| v80 | 2026-01-28 | Added 100 comments scraping |
-| v79 | 2026-01-28 | Batch processing attempt |
-| v73-v78 | 2026-01-28 | Structured data extraction |
-| v71-v72 | 2026-01-28 | Expression format fixes |
+| v81 | 2026-01-28 | 修复批处理（Code 节点） |
+| v80 | 2026-01-28 | 添加100条评论抓取 |
+| v79 | 2026-01-28 | 批处理尝试 |
+| v73-v78 | 2026-01-28 | 结构化数据提取 |
+| v71-v72 | 2026-01-28 | 表达式格式修复 |
 
 ---
 
-## Skill Implementation Checklist
+## Skill 实现检查清单
 
-- [x] Use `$input.all()` + `.map()` for batch processing
-- [x] Implement error isolation (single failure ≠ batch failure)
-- [x] Use exact Gemini prompt from n8n (no modifications)
-- [x] Extract title/price/rating with regex fallbacks
-- [x] Olostep API with 100 comments
-- [x] Google Sheets dual output (table + markdown)
-- [x] Support ASIN and URL input formats
+- [x] 使用 `$input.all()` + `.map()` 进行批处理
+- [x] 实现错误隔离（单个失败 ≠ 批处理失败）
+- [x] 使用 n8n 的确切 Gemini 提示词（无修改）
+- [x] 使用正则备用模式提取标题/价格/评分
+- [x] Olostep API 抓取100条评论
+- [x] Google Sheets 双输出（表格 + markdown）
+- [x] 支持 ASIN 和 URL 输入格式
