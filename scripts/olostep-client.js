@@ -59,6 +59,8 @@ async function scrapeWithOlostep(asin, options = {}) {
 
 /**
  * Scrape using v1 API
+ * IMPORTANT: Do NOT use 'extract' parameter - it causes 0% accuracy (returns wrong products)
+ * Matches n8n working configuration: only send 'url' parameter
  */
 async function scrapeV1(endpoint, url, apiKey, comments) {
   const response = await fetch(endpoint, {
@@ -68,18 +70,9 @@ async function scrapeV1(endpoint, url, apiKey, comments) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      url: url,
-      extract: {
-        title: true,
-        bullet_points: true,
-        price: true,
-        rating: true,
-        reviews: {
-          max: comments,
-          sort: "recent"
-        },
-        images: true
-      }
+      url: url
+      // NO extract parameter - let Olostep auto-detect (matches n8n config)
+      // Using extract parameter causes wrong products to be returned
     })
   });
 
@@ -90,11 +83,13 @@ async function scrapeV1(endpoint, url, apiKey, comments) {
 
   const data = await response.json();
 
-  // Convert v1 response to standard format
+  // v1 API returns markdown content directly
+  const markdownContent = data.markdown_content || data.content || JSON.stringify(data, null, 2);
+
   return {
     success: true,
     apiVersion: 'v1',
-    markdownContent: convertV1ToMarkdown(data),
+    markdownContent: markdownContent,
     rawData: data
   };
 }
@@ -134,53 +129,9 @@ async function scrapeV2(endpoint, url, apiKey, waitTime, comments) {
   };
 }
 
-/**
- * Convert v1 response data to markdown format
- */
-function convertV1ToMarkdown(data) {
-  let markdown = '';
+// convertV1ToMarkdown removed - v1 API returns markdown directly
+// The 'extract' parameter caused accuracy issues (0%), so we now use raw markdown from Olostep
 
-  if (data.data) {
-    if (data.data.title) {
-      markdown += `# ${data.data.title}\n\n`;
-    }
-
-    if (data.data.price) {
-      const priceStr = typeof data.data.price === 'object'
-        ? JSON.stringify(data.data.price)
-        : String(data.data.price);
-      markdown += `**Price:** ${priceStr}\n\n`;
-    }
-
-    if (data.data.rating) {
-      const ratingStr = typeof data.data.rating === 'object'
-        ? JSON.stringify(data.data.rating)
-        : String(data.data.rating);
-      markdown += `**Rating:** ${ratingStr}\n\n`;
-    }
-
-    if (data.data.bullet_points && Array.isArray(data.data.bullet_points)) {
-      markdown += `**Bullet Points:**\n`;
-      data.data.bullet_points.forEach(point => {
-        markdown += `- ${point}\n`;
-      });
-      markdown += '\n';
-    }
-
-    if (data.data.reviews && Array.isArray(data.data.reviews)) {
-      markdown += `**Reviews (${data.data.reviews.length}):\n\n`;
-      data.data.reviews.slice(0, 20).forEach((review, i) => {
-        markdown += `### Review ${i + 1}\n`;
-        markdown += `- **Rating:** ${review.rating || 'N/A'}\n`;
-        if (review.title) markdown += `- **Title:** ${review.title}\n`;
-        if (review.body) markdown += `- **Body:** ${review.body}\n`;
-        markdown += '\n';
-      });
-    }
-  }
-
-  return markdown || '# No content available\n';
-}
 
 module.exports = {
   scrapeWithOlostep,

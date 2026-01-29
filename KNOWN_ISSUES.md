@@ -1,47 +1,57 @@
 # Known Issues and Limitations
 
-## Critical Issue: Olostep API v1 Inaccuracy (FIXED in v1.0.1)
+## Critical Issue: Olostep API `extract` Parameter Bug (FIXED in v1.0.2)
 
 ### Problem
 **Date Discovered**: 2026-01-29
 **Severity**: 🚨 CRITICAL
 **Status**: ✅ FIXED
 
-The initial implementation used Olostep API v1 endpoint, which had **0% accuracy** in testing:
+The initial implementation used Olostep API v1 with the `extract` parameter, which caused **0% accuracy**:
 - 3 out of 3 test ASINs returned completely wrong products
 - Products returned were real Amazon items, but not the target ASINs
-- Example: ASIN B08D6T4DKS (Rubbermaid cleaner) was incorrectly identified as "RENPHO Massage Gun"
+- Example: ASIN B08D6T4DKS (Rubbermaid cleaner) was incorrectly identified as "Tineco vacuum"
 
 ### Root Cause
 ```javascript
-// WRONG - v1 API used outdated endpoint
-'https://api.olostep.com/v1/scrapes'
+// WRONG - using extract parameter causes wrong products
+{
+  "url": "https://www.amazon.com/dp/B08D6T4DKS",
+  "extract": {
+    "title": true,
+    "bullet_points": true,
+    "price": true,
+    "rating": true,
+    "reviews": { "max": 100, "sort": "recent" },
+    "images": true
+  }
+}
+// Result: Tineco vacuum ❌ WRONG
 
-// CORRECT - v2 API with proper parameters
-'https://api.olostep.com/v2/agent/web-agent'
+// CORRECT - only send URL parameter (matches n8n config)
+{
+  "url": "https://www.amazon.com/dp/B08D6T4DKS"
+}
+// Result: Rubbermaid cleaner ✅ CORRECT
 ```
 
-The v1 API likely scraped recommendation/sponsored products instead of the main product.
+**Key Finding**: The `extract` parameter causes Olostep to return different product data. This was discovered by comparing with a working n8n workflow that only sends the URL parameter.
 
 ### Fix Applied
-- ✅ Upgraded to Olostep API v2 endpoint
-- ✅ Added `wait_time: 10` to ensure page fully loads
-- ✅ Added `extract_dynamic_content: true` for JavaScript rendering
-- ✅ Implemented data validation module (`scripts/data-validator.js`)
-- ✅ Added validation checks in test script
+- ✅ Removed `extract` parameter from v1 API calls
+- ✅ Updated `scripts/olostep-client.js` to match n8n's working configuration
+- ✅ Now Olostep auto-detects and extracts content (no manual specification needed)
+- ✅ Accuracy improved from 0% to 100% in testing
 
 ### Testing Results
-After fix, validation accuracy improved significantly. However, we recommend:
+Tested with the same 3 ASINs that previously failed:
+```
+B08D6T4DKS → Rubbermaid Reveal Power Scrubber ✅ CORRECT
+B09SYYRBVP → kelamayi Broom ✅ CORRECT
+B0FF4515N3 → AONEZ Brushes ✅ CORRECT
 
-1. **Always validate results** - The validator now checks for:
-   - Title length sanity
-   - ASIN consistency
-   - Price/rating reasonableness
-   - Common wrong data patterns
-
-2. **Manual verification for critical analysis** - For important business decisions, verify ASINs manually
-
-3. **Use multiple data sources** - Consider implementing backup scrapers for critical use cases
+Accuracy: 3/3 (100%)
+```
 
 ---
 
@@ -58,10 +68,10 @@ After fix, validation accuracy improved significantly. However, we recommend:
 - Region-based content differences
 - **Mitigation**: Use proxies, rotate user agents, respect rate limits
 
-### 3. Dynamic Content Rendering
-- Some Amazon pages use heavy JavaScript
-- v2 API improved this but not 100% reliable
-- **Mitigation**: Added `wait_time` parameter, validation checks
+### 3. v2 API Authentication Issues
+- v2 API (`/v2/agent/web-agent`) returns 403 errors with current API keys
+- Current implementation uses v1 API which works correctly
+- **Mitigation**: v1 API with simplified parameters works well
 
 ### 4. Multi-Regional ASINs
 - Same ASIN may show different products in different regions
@@ -76,17 +86,16 @@ After fix, validation accuracy improved significantly. However, we recommend:
 ```bash
 node scripts/test-skill.js B08LNY11RK B0F5HFG1N8
 ```
-Review validation warnings manually.
 
 ### For Large Batches (> 10 ASINs)
-1. Run in smaller chunks
-2. Review validation report
+1. Run in smaller chunks (≤20 ASINs)
+2. Review generated markdown reports
 3. Sample 10-20% results manually
 
 ### For Production/Critical Analysis
-1. Use multiple scraping sources
-2. Implement human-in-the-loop verification
-3. Keep detailed logs for audit trail
+1. Always verify ASINs in generated reports
+2. Keep detailed logs for audit trail
+3. Consider manual verification for important decisions
 
 ---
 
@@ -94,26 +103,21 @@ Review validation warnings manually.
 
 If you encounter accuracy problems:
 
-1. **Enable debug mode**:
-   ```bash
-   DEBUG=1 node scripts/test-skill.js YOUR_ASIN
-   ```
+1. **Verify ASIN** - Check if the ASIN in the report title matches what you requested
 
-2. **Check validation output** - Look for validation warnings
-
-3. **Report with details**:
+2. **Report with details**:
    - ASIN that failed
    - Expected vs actual product
    - Full error message
    - Your Olostep API version (check .env)
 
-4. **Workaround**: Use manual analysis or alternative scrapers
+3. **Workaround**: Use manual analysis or alternative scrapers
 
 ---
 
 ## Future Improvements
 
-- [ ] Add support for multiple scraping APIs (fallback mechanism)
+- [ ] Add support for v2 API when authentication is resolved
 - [ ] Implement local scraping with Playwright (no API limits)
 - [ ] Add confidence scoring to results
 - [ ] Create web dashboard for validation review
@@ -123,12 +127,16 @@ If you encounter accuracy problems:
 
 ## Changelog
 
-### v1.0.1 (2026-01-29) - CRITICAL BUG FIX
-- ✅ Fixed Olostep API v1 accuracy issue (0% → tested improvement)
-- ✅ Upgraded to v2 API endpoint
-- ✅ Added data validation module
-- ✅ Implemented validation checks in test script
-- ✅ Added helper functions for data extraction
+### v1.0.2 (2026-01-29) - CRITICAL BUG FIX
+- ✅ Fixed Olostep API accuracy issue (0% → 100%)
+- ✅ Removed `extract` parameter that was causing wrong products
+- ✅ Updated to match n8n's working configuration
+- ✅ Added accuracy test script (`test-accuracy-fix.mjs`)
+
+### v1.0.1 (2026-01-29)
+- Initial attempt to fix accuracy (v2 API approach)
+- Added data validation module
+- Implemented validation checks
 
 ### v1.0.0 (2026-01-28)
 - Initial release
@@ -139,4 +147,4 @@ If you encounter accuracy problems:
 ---
 
 **Last Updated**: 2026-01-29
-**Document Version**: 1.0.1
+**Document Version**: 1.0.2
