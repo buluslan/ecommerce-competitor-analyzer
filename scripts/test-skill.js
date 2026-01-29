@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { validateProductData } = require('./data-validator.js');
+const { scrapeWithOlostep } = require('./olostep-client.js');
 
 // Load environment variables
 function loadEnv() {
@@ -27,56 +28,28 @@ function loadEnv() {
   }
 }
 
-// Test scraping function (using v2 API with better accuracy)
+// Test scraping function (with v1/v2 compatibility)
 async function testScrape(asin) {
   console.log(`\n🔍 Testing scrape for ASIN: ${asin}`);
 
-  const OLOSTEP_API_KEY = process.env.OLOSTEP_API_KEY;
-  const url = `https://www.amazon.com/dp/${asin}`;
-
   try {
-    // Use v2 API endpoint with dynamic content extraction
-    // CRITICAL: v2 API has much better accuracy than v1
-    const response = await fetch('https://api.olostep.com/v2/agent/web-agent', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OLOSTEP_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        url: url,
-        wait_time: 10,  // Wait for page to fully load
-        screenshot: false,
-        extract_dynamic_content: true,
-        comments_number: 100  // Extract 100 reviews
-      })
+    // Use compatible client with auto-fallback
+    const result = await scrapeWithOlostep(asin, {
+      apiVersion: process.env.OLOSTEP_API_VERSION || 'v1',  // Default to v1
+      comments: 100
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Olostep API error: ${response.status} - ${errorText}`);
+    if (!result.success) {
+      throw new Error(result.error || 'Scraping failed');
     }
 
-    const data = await response.json();
-
-    // Convert to markdown format (v2 API returns different structure)
-    let markdownContent = `# Product Analysis for ${asin}\n\n`;
-
-    // v2 API returns markdown_content directly
-    if (data.markdown_content) {
-      markdownContent = data.markdown_content;
-    } else if (data.html_content) {
-      // Fallback: convert HTML to basic markdown
-      markdownContent += `## HTML Content\n\n${data.html_content.substring(0, 5000)}...\n\n`;
-    } else {
-      throw new Error('No content returned from API');
-    }
+    console.log(`✅ Scrape successful with API ${result.apiVersion}: ${result.markdownContent.length} characters`);
 
     // Extract basic data for validation
     const extractedData = {
-      title: extractTitle(markdownContent),
-      price: extractPrice(markdownContent),
-      rating: extractRating(markdownContent)
+      title: extractTitle(result.markdownContent),
+      price: extractPrice(result.markdownContent),
+      rating: extractRating(result.markdownContent)
     };
 
     // Validate scraped data
@@ -87,18 +60,8 @@ async function testScrape(asin) {
       validation.issues.forEach(issue => console.error(`   ❌ ${issue}`));
       validation.warnings.forEach(warning => console.warn(`   ⚠️  ${warning}`));
       console.error(`   ${validation.summary}`);
-
-      // Still return data but mark as potentially invalid
-      return {
-        success: true,
-        data,
-        markdownContent,
-        validation: {
-          passed: false,
-          ...validation
-        },
-        extractedData
-      };
+    } else {
+      console.log(`✅ Validation passed`);
     }
 
     if (validation.warnings.length > 0) {
@@ -106,14 +69,13 @@ async function testScrape(asin) {
       validation.warnings.forEach(warning => console.warn(`   ⚠️  ${warning}`));
     }
 
-    console.log(`✅ Scrape successful: ${markdownContent.length} characters of content`);
-    console.log(`✅ Validation passed`);
     return {
       success: true,
-      data,
-      markdownContent,
+      data: result.rawData,
+      markdownContent: result.markdownContent,
+      apiVersion: result.apiVersion,
       validation: {
-        passed: true,
+        passed: validation.isValid,
         ...validation
       },
       extractedData
