@@ -2,7 +2,7 @@
 name: ecommerce-competitor-analyzer
 description: Multi-platform e-commerce competitor analysis skill that automatically scrapes product data from Amazon, Temu, Shopee and generates comprehensive analysis reports using AI. Use when you need to analyze competitor products, extract product insights, or batch analyze multiple product listings. Supports bulk processing with structured outputs including title, price, rating, reviews, and strategic analysis.
 version: 1.0.0
-author: Buluu (杜雷撕)
+author: Buluslan@新西楼Newest AI
 globs: ["*.md", "platforms.yaml", "scripts/*.js", "prompts/*.md"]
 ---
 
