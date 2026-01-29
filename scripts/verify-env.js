@@ -144,7 +144,7 @@ function main() {
   } else {
     log(colors.red, '\n❌', 'Some required environment variables are missing');
     log(colors.yellow, '💡', 'Please edit .env file and add the missing values\n');
-    console.log('See SETUP.md for detailed instructions\n');
+    console.log('See docs/SETUP.md for detailed instructions\n');
     process.exit(1);
   }
 }
