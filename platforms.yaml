@@ -1,0 +1,95 @@
+# E-commerce Platform Configuration
+# Reference: n8n workflow configuration (v81)
+
+# Supported platforms
+platforms:
+  amazon:
+    name: "Amazon"
+    version: "1.0.0"
+    status: "active"
+    enabled: true
+
+    # URL patterns
+    url_patterns:
+      - "amazon.com"
+      - "amazon.co.uk"
+      - "amazon.de"
+      - "amazon.es"
+      - "amazon.fr"
+      - "amazon.it"
+      - "amazon.ca"
+      - "amazon.co.jp"
+
+    # ASIN extraction patterns
+    asin_regex:
+      standard: "/dp/([A-Z0-9]{10})"
+      product_page: "/([A-Z0-9]{10})/ref="
+      direct: "^[A-Z0-9]{10}$"
+
+    # Scraper configuration
+    scraper:
+      provider: "olostep"
+      api_endpoint: "https://api.olostep.com/v2/agent/web-agent"
+      comments_to_scrape: 100  # Matching n8n config
+      wait_time: 10
+      timeout: 120000
+
+    # Data extraction patterns (from n8n "Code - 提取结构化数据" node)
+    extraction_patterns:
+      title:
+        - regex: "产品标题[：:]+([^\\n]+)"
+        - regex: "Title[：:]+([^\\n]+)"
+        - default: "未知"
+      price:
+        - regex: "价格[：:]+[^0-9]*([0-9]+\\.?[0-9]*)"
+        - regex: "Price[：:]+[^0-9]*([0-9]+\\.?[0-9]*)"
+        - default: "未知"
+      rating:
+        - regex: "评分[：:]+[^0-9]*([0-9]+\\.?[0-9]*)"
+        - regex: "Rating[：:]+[^0-9]*([0-9]+\\.?[0-9]*)"
+        - default: "未知"
+
+    # Output format (matching Google Sheets structure)
+    output_format:
+      - "ASIN"
+      - "产品标题"
+      - "价格"
+      - "评分"
+      - "文案分析摘要"
+      - "视觉分析摘要"
+      - "评论分析摘要"
+      - "市场分析摘要"
+
+  # Future platforms (not yet implemented)
+  temu:
+    name: "Temu"
+    version: "0.0.1"
+    status: "planned"
+    enabled: false
+    notes: "Requires Playwright-based scraper"
+
+  shopee:
+    name: "Shopee"
+    version: "0.0.1"
+    status: "planned"
+    enabled: false
+    notes: "Requires Playwright-based scraper"
+
+# Global settings
+settings:
+  # Batch processing limits
+  max_batch_size: 20
+  concurrency_limit: 5
+  retry_attempts: 3
+
+  # API timeouts
+  scraping_timeout: 120000  # 2 minutes
+  analysis_timeout: 60000   # 1 minute
+
+  # Error handling
+  continue_on_error: true
+  require_all_success: false
+
+  # Output settings
+  google_sheets_id: "YOUR_GOOGLE_SHEETS_ID_HERE"
+  markdown_output_dir: "./output"
