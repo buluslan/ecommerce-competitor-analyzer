@@ -49,3 +49,6 @@ coverage/
 tmp/
 temp/
 *.tmp
+
+# Development test scripts with hardcoded API keys
+test-olostep-key.js

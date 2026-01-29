@@ -20,10 +20,10 @@ Invalid key=value pair (missing equal-sign) in Authorization header
 **原因**: API Key包含了"olostep_"前缀
 ```bash
 # 错误格式
-OLOSTEP_API_KEY=olostep_R9xHjqtZqE3Yskv4B1CAzccfgr6XuFTXYCJg
+OLOSTEP_API_KEY=olostep_YOUR_API_KEY_HERE
 
 # 修复后
-OLOSTEP_API_KEY=R9xHjqtZqE3Yskv4B1CAzccfgr6XuFTXYCJg
+OLOSTEP_API_KEY=YOUR_API_KEY_WITHOUT_PREFIX
 ```
 
 **修复状态**: ✅ 已修复
@@ -56,7 +56,7 @@ OLOSTEP_API_KEY=R9xHjqtZqE3Yskv4B1CAzccfgr6XuFTXYCJg
 ### 可能的原因
 
 1. **API Key无效/过期** ⭐⭐⭐⭐⭐
-   - 当前Key: `R9xHjqtZqE3Yskv4B1CAzccfgr6XuFTXYCJg`
+   - 当前Key: `YOUR_API_KEY_HERE` (已隐藏)
    - 可能已过期或被撤销
    - 需要重新生成
 
