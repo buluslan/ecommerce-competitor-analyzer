@@ -5,13 +5,13 @@
  * Reference: 工作流配置.json
  *
  * Features:
- * - Scrapes Amazon product pages with 100 comments
- * - Returns structured data (markdown + HTML)
+ * - Scrapes Amazon product pages (title, price, rating, reviews, images)
+ * - Returns structured data (markdown)
  * - Error handling with retry logic
  */
 
 // Olostep API Configuration
-const OLOSTEP_API_ENDPOINT = 'https://api.olostep.com/v2/agent/web-agent';
+const OLOSTEP_API_ENDPOINT = 'https://api.olostep.com/v1/scrapes';
 const OLOSTEP_API_KEY = process.env.OLOSTEP_API_KEY || '';
 
 // Amazon URL patterns
@@ -62,7 +62,6 @@ function buildAmazonURL(asin, domain = 'amazon.com') {
 async function scrapeAmazonProduct(asin, options = {}) {
   const {
     domain = 'amazon.com',
-    comments = 100,  // Number of comments to scrape (from n8n config)
     timeout = 120000, // 2 minutes timeout
     retries = 3
   } = options;
@@ -75,12 +74,9 @@ async function scrapeAmazonProduct(asin, options = {}) {
   }
 
   // Prepare API request (matching n8n HTTP Request node)
+  // Only use 'url' parameter - let Olostep auto-detect and scrape all content
   const requestBody = {
-    url: url,
-    wait_time: 10,  // Wait for page load
-    screenshot: false,
-    extract_dynamic_content: true,
-    comments_number: comments  // 100 comments as per n8n config
+    url: url
   };
 
   // API call with retry logic
@@ -101,8 +97,12 @@ async function scrapeAmazonProduct(asin, options = {}) {
 
       const data = await response.json();
 
+      // v1 API returns data.result.markdown_content
+      const markdownContent = data.result?.markdown_content ||
+                              data.markdown_content || '';
+
       // Validate response structure
-      if (!data.markdown_content && !data.html_content) {
+      if (!markdownContent) {
         throw new Error('Invalid response: missing content');
       }
 
@@ -111,11 +111,8 @@ async function scrapeAmazonProduct(asin, options = {}) {
         success: true,
         asin: asin,
         url: url,
-        markdownContent: data.markdown_content || '',
-        htmlContent: data.html_content || '',
-        timestamp: new Date().toISOString(),
-        apiCallId: data.task_id || null,
-        commentsScraped: comments
+        markdownContent: markdownContent,
+        timestamp: new Date().toISOString()
       };
 
     } catch (error) {
