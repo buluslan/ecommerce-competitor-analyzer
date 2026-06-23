@@ -75,6 +75,26 @@ platforms:
     enabled: false
     notes: "需要基于 Playwright 的爬虫"
 
+# 可选公开社交信号源
+social_sources:
+  xquik:
+    name: "Xquik"
+    status: "optional"
+    enabled: false
+    docs_url: "https://docs.xquik.com/api-reference/overview"
+    skill_url: "https://github.com/Xquik-dev/x-twitter-scraper"
+    required_env:
+      - "XQUIK_API_KEY"
+    use_cases:
+      - "Search public X posts for product, brand, and competitor terms"
+      - "Summarize recurring objections, launch reactions, and comparison language"
+    safety:
+      - "Use only public posts and user-provided search terms"
+      - "Do not collect private account data or bypass platform access controls"
+    output_fields:
+      - "X讨论摘要"
+      - "X风险信号"
+
 # 全局设置
 settings:
   # 批处理限制
