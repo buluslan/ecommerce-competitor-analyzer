@@ -83,6 +83,8 @@ social_sources:
     enabled: false
     docs_url: "https://docs.xquik.com/api-reference/overview"
     skill_url: "https://github.com/Xquik-dev/x-twitter-scraper"
+    api_endpoint: "https://xquik.com/api/v1/x/tweets/search"
+    authentication: "x-api-key request header"
     required_env:
       - "XQUIK_API_KEY"
     use_cases:

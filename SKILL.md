@@ -87,7 +87,7 @@ Use Xquik only when the user explicitly asks for public social discussion contex
 
 **How to handle signals**:
 1. Build search phrases from product title, brand, ASIN, competitor names, and user-supplied terms
-2. Search public X posts through Xquik using `XQUIK_API_KEY`
+2. Call `GET https://xquik.com/api/v1/x/tweets/search` with `x-api-key: $XQUIK_API_KEY`, a URL-encoded `q`, and a bounded `limit`
 3. Summarize repeated objections, comparison language, launch reactions, and risk signals
 4. Append the summary to the product context before AI analysis
 5. Keep the main Amazon product scrape as the primary evidence source
@@ -260,7 +260,10 @@ The AI analysis uses a proven 4-dimensional framework. The exact prompt is store
 - **Docs**: `https://docs.xquik.com/api-reference/overview`
 - **Skill**: `https://github.com/Xquik-dev/x-twitter-scraper`
 - **Authentication**: `XQUIK_API_KEY`
+- **Request**: `GET https://xquik.com/api/v1/x/tweets/search?q=...&limit=...` with the `x-api-key` header
 - **Use only when**: The user asks for social discussion, launch reaction, or public market signal context
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
 
 ---
 

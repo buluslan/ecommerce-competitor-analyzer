@@ -148,6 +148,10 @@ https://amazon.com/dp/B08N5WRQ1Y
 
 启用后，技能会使用 `XQUIK_API_KEY` 搜索产品、品牌和竞品相关的公开 X 帖子，并把重复出现的异议、发布反应和对比语言汇总到市场分析中。未配置 `XQUIK_API_KEY` 时，核心 Amazon 分析流程不受影响。
 
+调用 `GET https://xquik.com/api/v1/x/tweets/search`，通过 `x-api-key` 请求头传入密钥，并使用 `q` 和有界的 `limit` 参数。完整参数和响应结构以 [Xquik 搜索文档](https://docs.xquik.com/api-reference/x/search-tweets) 为准。
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
+
 ### 输出格式
 
 #### 格式 1：Google Sheets（结构化数据）
@@ -292,6 +296,9 @@ node scripts/detect-platform.js https://amazon.com/dp/B0C4YT8S6H
 
 # 测试爬虫
 node scripts/scrape-amazon.js B0C4YT8S6H
+
+# 测试本地数据验证器（无需 API 密钥）
+node --test scripts/data-validator.test.js
 ```
 
 ### 添加新平台
