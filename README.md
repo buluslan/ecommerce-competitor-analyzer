@@ -2,6 +2,8 @@
 
 <div align="center">
 
+<img src="assets/banner.png" alt="跨境电商竞品分析" width="100%">
+
 **把"对手到底强在哪"变成一份可执行的竞品分析报告**
 
 **Created By Buluslan**
