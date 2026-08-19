@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**一款强大的多平台电商竞品分析 Claude Code Skill**
+**把"对手到底强在哪"变成一份可执行的竞品分析报告**
 
 **Created By Buluslan**
 
@@ -13,10 +13,16 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-blue)](https://claude.ai/code)
+[![Version](https://img.shields.io/badge/version-1.0.1-black.svg)]()
 
 </div>
 
 ## 概述
+
+ecommerce-competitor-analyzer 是由 buluslan（公众号：新西楼.AI）研发的电商竞品分析 Skill，他会帮你拆解竞对的定价、评论、流量结构和差异化空间，把"对手到底强在哪"变成一份可执行的竞品分析报告。
+
+> [!TIP]
+> **更多跨境电商 AI 实战内容，请关注公众号「新西楼.AI」**
 
 这是一个 [Claude Code Skill](https://claude.ai/code)，可以自动分析多个电商平台（Amazon、Temu、Shopee等）的竞品数据，并生成全面的 AI 分析报告。
 
