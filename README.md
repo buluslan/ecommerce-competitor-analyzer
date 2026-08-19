@@ -73,6 +73,7 @@ Claude 就会：
 | 服务 | 用途 |
 |---------|---------|
 | **Google Sheets API** | 将结果导出到 Google Sheets |
+| **Xquik API** | 添加公开 X 讨论信号，用于品牌声量和风险洞察 |
 
 ## 安装
 
@@ -103,6 +104,7 @@ nano .env
 OLOSTEP_API_KEY=your_olostep_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 GOOGLE_SHEETS_ID=your_google_sheets_id_here
+XQUIK_API_KEY=your_xquik_api_key_here
 ```
 
 ### 步骤 3：验证安装
@@ -143,6 +145,20 @@ B0CLFH7CCV
 https://amazon.com/dp/B0C4YT8S6H
 https://amazon.com/dp/B08N5WRQ1Y
 ```
+
+### 可选公开 X 信号
+
+如果需要补充社交讨论证据，可以在请求中说明：
+
+```
+分析 B0C4YT8S6H，并加入公开 X 讨论信号
+```
+
+启用后，技能会使用 `XQUIK_API_KEY` 搜索产品、品牌和竞品相关的公开 X 帖子，并把重复出现的异议、发布反应和对比语言汇总到市场分析中。未配置 `XQUIK_API_KEY` 时，核心 Amazon 分析流程不受影响。
+
+调用 `GET https://xquik.com/api/v1/x/tweets/search`，通过 `x-api-key` 请求头传入密钥，并使用 `q` 和有界的 `limit` 参数。完整参数和响应结构以 [Xquik 搜索文档](https://docs.xquik.com/api-reference/x/search-tweets) 为准。
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
 
 ### 输出格式
 
@@ -288,6 +304,9 @@ node scripts/detect-platform.js https://amazon.com/dp/B0C4YT8S6H
 
 # 测试爬虫
 node scripts/scrape-amazon.js B0C4YT8S6H
+
+# 测试本地数据验证器（无需 API 密钥）
+node --test scripts/data-validator.test.js
 ```
 
 ### 添加新平台

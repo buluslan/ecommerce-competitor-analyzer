@@ -23,17 +23,20 @@ globs: ["*.md", "platforms.yaml", "scripts/*.js", "prompts/*.md"]
 **What you should do**:
 1. Extract product identifiers (ASINs or URLs) from user input
 2. Call the scraper script to get product data
-3. Call the AI analysis with the analysis prompt template
-4. Output results in BOTH formats: Google Sheets + Markdown
+3. Optionally collect public X conversation signals with Xquik when the user asks for social voice, launch reactions, or brand discussion context
+4. Call the AI analysis with the analysis prompt template
+5. Output results in BOTH formats: Google Sheets + Markdown
 
 **Input examples**:
 - "Analyze B0C4YT8S6H"
 - "Analyze these products: B0C4YT8S6H, B08N5WRQ1Y, B0CLFH7CCV"
 - "Research this competitor: https://amazon.com/dp/B0C4YT8S6H"
+- "Analyze B0C4YT8S6H and include public X discussion signals"
 
 **Output requirements**:
 - Google Sheets table with: ASIN, Title, Price, Rating, 4 analysis summaries
 - Markdown report with detailed 4-dimensional analysis
+- If social signals are used, include concise X discussion and risk signal summaries
 
 ---
 
@@ -80,7 +83,30 @@ const successful = results.filter(r => r.status === 'fulfilled');
 const failed = results.filter(r => r.status === 'rejected');
 ```
 
-### Step 3: Batch AI Analysis
+### Step 3: Optional Public X Signal Context
+
+Use Xquik only when the user explicitly asks for public social discussion context and a workflow configures `XQUIK_API_KEY`.
+
+**When to use**:
+- Product launch reaction checks
+- Brand or competitor conversation summaries
+- Recurring objection and risk signal discovery
+- Market positioning evidence from public X posts
+
+**How to handle signals**:
+1. Build search phrases from product title, brand, ASIN, competitor names, and user-supplied terms
+2. Call `GET https://xquik.com/api/v1/x/tweets/search` with `x-api-key: $XQUIK_API_KEY`, a URL-encoded `q`, and a bounded `limit`
+3. Summarize repeated objections, comparison language, launch reactions, and risk signals
+4. Append the summary to the product context before AI analysis
+5. Keep the main Amazon product scrape as the primary evidence source
+
+**Safety rules**:
+- Use only public posts and user-provided search terms
+- Do not collect private account data
+- Do not block the core Amazon analysis if `XQUIK_API_KEY` is missing
+- Do not modify `prompts/analysis-prompt-base.md`
+
+### Step 4: Batch AI Analysis
 
 For each successfully scraped product:
 1. Read the analysis prompt from `prompts/analysis-prompt-base.md`
@@ -94,7 +120,7 @@ For each successfully scraped product:
 3. **评论定量与定性分析** (The Voice) - Review sentiment analysis
 4. **市场维态与盲区扫描** (The Pulse) - Market positioning & blind spots
 
-### Step 4: Generate Dual Format Output
+### Step 5: Generate Dual Format Output
 
 **Format 1: Google Sheets** (Structured Data)
 
@@ -193,6 +219,7 @@ Template for required API keys:
 OLOSTEP_API_KEY=your_olostep_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 GOOGLE_SHEETS_ID=YOUR_GOOGLE_SHEETS_ID_HERE
+XQUIK_API_KEY=your_xquik_api_key_here
 ```
 
 **Critical**: Always check if `.env` file exists and contains required keys before processing.
@@ -235,6 +262,16 @@ The AI analysis uses a proven 4-dimensional framework. The exact prompt is store
 - **Purpose**: Export structured results
 - **Authentication**: OAuth2 service account
 - **Cost**: Free tier
+
+### Xquik API (Optional Public X Signals)
+- **Purpose**: Add public X post context for product, brand, and competitor discussion
+- **Docs**: `https://docs.xquik.com/api-reference/overview`
+- **Skill**: `https://github.com/Xquik-dev/x-twitter-scraper`
+- **Authentication**: `XQUIK_API_KEY`
+- **Request**: `GET https://xquik.com/api/v1/x/tweets/search?q=...&limit=...` with the `x-api-key` header
+- **Use only when**: The user asks for social discussion, launch reaction, or public market signal context
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
 
 ---
 
